@@ -1,0 +1,23 @@
+{
+  "merchant": "Zepto",
+  "merchantId": "zepto",
+  "products": [
+    { "id": "z1", "name": "Aashirvaad Atta", "category": "staples", "price": 285, "unit": "5kg", "inStock": true, "eta": 9 },
+    { "id": "z2", "name": "Amul Toned Milk", "category": "dairy", "price": 32, "unit": "500ml", "inStock": true, "eta": 9 },
+    { "id": "z3", "name": "Toor Dal", "category": "staples", "price": 165, "unit": "1kg", "inStock": true, "eta": 9 },
+    { "id": "z4", "name": "Fortune Sunflower Oil", "category": "staples", "price": 145, "unit": "1L", "inStock": true, "eta": 10 },
+    { "id": "z5", "name": "Farm Eggs", "category": "dairy", "price": 82, "unit": "12pcs", "inStock": true, "eta": 9 },
+    { "id": "z6", "name": "Britannia Bread", "category": "bakery", "price": 45, "unit": "400g", "inStock": true, "eta": 8 },
+    { "id": "z7", "name": "Tata Sugar", "category": "staples", "price": 48, "unit": "1kg", "inStock": true, "eta": 9 },
+    { "id": "z8", "name": "Tata Salt", "category": "staples", "price": 28, "unit": "1kg", "inStock": true, "eta": 9 },
+    { "id": "z9", "name": "Tata Tea Gold", "category": "beverages", "price": 320, "unit": "500g", "inStock": true, "eta": 10 },
+    { "id": "z10", "name": "Nescafe Classic Coffee", "category": "beverages", "price": 225, "unit": "100g", "inStock": false, "eta": 0 },
+    { "id": "z11", "name": "Parle-G Biscuits", "category": "snacks", "price": 10, "unit": "80g", "inStock": true, "eta": 8 },
+    { "id": "z12", "name": "Amul Dahi", "category": "dairy", "price": 35, "unit": "400g", "inStock": true, "eta": 9 },
+    { "id": "z13", "name": "Amul Ghee", "category": "dairy", "price": 580, "unit": "1L", "inStock": true, "eta": 10 },
+    { "id": "z14", "name": "India Gate Basmati Rice", "category": "staples", "price": 399, "unit": "5kg", "inStock": true, "eta": 11 },
+    { "id": "z15", "name": "Amul Paneer", "category": "dairy", "price": 95, "unit": "200g", "inStock": true, "eta": 9 },
+    { "id": "z16", "name": "Onion", "category": "vegetables", "price": 35, "unit": "1kg", "inStock": true, "eta": 8 },
+    { "id": "z17", "name": "Potato", "category": "vegetables", "price": 30, "unit": "1kg", "inStock": true, "eta": 8 }
+  ]
+}
