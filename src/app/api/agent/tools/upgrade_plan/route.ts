@@ -27,13 +27,19 @@ export async function POST(req: Request) {
     });
   }
 
+  // Demo mode: simulate upgrade when no payment method
   if (!customer_id || !payment_method_id) {
+    const demoSubId = `demo_sub_${Date.now()}`;
     return NextResponse.json({
-      success: false,
-      error: "No saved payment method. Please complete onboarding first.",
+      success: true,
+      subscription_id: demoSubId,
+      plan,
+      demo: true,
+      message: `Upgraded to Boli ${plan.charAt(0).toUpperCase() + plan.slice(1)}! Enjoy unlimited orders${plan === "pro" ? " and premium voice" : ""}.`,
     });
   }
 
+  // Real subscription flow
   try {
     const subscription = await stripe.subscriptions.create({
       customer: customer_id,

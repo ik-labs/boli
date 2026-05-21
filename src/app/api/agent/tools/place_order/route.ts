@@ -44,20 +44,26 @@ export async function POST(req: Request) {
     });
   }
 
-  const connectAccount = CONNECT_ACCOUNTS[merchant?.toLowerCase()];
-
+  // Demo mode: simulate payment when no payment method
   if (!customer_id || !payment_method_id) {
+    const demoOrderId = `demo_${Date.now()}`;
     return NextResponse.json({
-      success: false,
-      error: "No saved payment method. Please complete onboarding first.",
+      success: true,
+      order_id: demoOrderId,
+      amount: price,
+      merchant,
+      product,
+      orders_used: orders_used + 1,
+      demo: true,
+      message: `Order confirmed! ₹${price} for ${product} from ${merchant}. Arriving in 10-15 minutes.`,
     });
   }
 
+  // Real payment flow
   const amountInPaise = Math.round(price * 100);
+  const connectAccount = CONNECT_ACCOUNTS[merchant?.toLowerCase()];
 
   try {
-    // In production, this would use Connect with transfer_data
-    // For demo, we create a direct PaymentIntent
     const paymentParams: Record<string, unknown> = {
       amount: amountInPaise,
       currency: "inr",
@@ -68,10 +74,8 @@ export async function POST(req: Request) {
       metadata: { product, merchant, consent: consent_transcript.slice(0, 200) },
     };
 
-    // Only add Connect params if account is configured
     if (connectAccount) {
-      const applicationFee = Math.round(amountInPaise * 0.025);
-      paymentParams.application_fee_amount = applicationFee;
+      paymentParams.application_fee_amount = Math.round(amountInPaise * 0.025);
       paymentParams.transfer_data = { destination: connectAccount };
     }
 

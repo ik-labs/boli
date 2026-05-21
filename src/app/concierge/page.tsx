@@ -125,6 +125,43 @@ function ConciergeInner() {
             label: labels[tool.tool_name] || `✅ ${tool.tool_name} done`,
             timestamp: Date.now(),
           }]);
+
+          // Handle demo mode: update local state on successful order/upgrade
+          if (tool.tool_name === "place_order" && user) {
+            try {
+              const res = typeof tool.result === "string" ? JSON.parse(tool.result) : tool.result;
+              if (res?.success) {
+                const newUsed = (user.ordersUsed || 0) + 1;
+                db.users.update(user.id, { ordersUsed: newUsed });
+                setUser({ ...user, ordersUsed: newUsed });
+                db.orders.add({
+                  userId: user.id, item: res.product || "Item", merchant: res.merchant || "Merchant",
+                  price: res.amount || 0, eta: 12, status: "confirmed",
+                  stripePaymentIntentId: res.order_id || "", consentTranscript: "",
+                  createdAt: new Date().toISOString(),
+                });
+              }
+            } catch { /* ignore parse errors */ }
+          }
+          if (tool.tool_name === "upgrade_plan" && user) {
+            try {
+              const res = typeof tool.result === "string" ? JSON.parse(tool.result) : tool.result;
+              if (res?.success) {
+                const newTier = (res.plan || "plus") as User["tier"];
+                db.users.update(user.id, { tier: newTier, ordersUsed: 0 });
+                setUser({ ...user, tier: newTier, ordersUsed: 0 });
+                setUpgraded(true);
+                setMessages((prev) => [...prev, { role: "system", text: `🎉 Upgraded to ${newTier}! Premium voice activated.` }]);
+                // Reconnect with premium agent
+                endSession();
+                setTimeout(async () => {
+                  const urlRes = await fetch(`/api/agent/signed-url?tier=${newTier}`);
+                  const { signedUrl } = await urlRes.json();
+                  if (signedUrl) startSession({ signedUrl });
+                }, 1500);
+              }
+            } catch { /* ignore */ }
+          }
         },
       });
     }
