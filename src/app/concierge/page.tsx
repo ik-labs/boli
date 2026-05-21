@@ -168,7 +168,7 @@ function ConciergeInner() {
                 // Show success card
                 setMessages((prev) => [...prev, {
                   role: "system",
-                  text: `✅ Payment Successful\n💳 ₹${res.amount} charged via Stripe\n🏪 ${res.merchant}\n📦 ${res.product}\n🆔 ${(res.order_id || "").slice(0, 20)}…`,
+                  text: `✅ Payment Successful — Live from Stripe\n💳 ₹${res.amount} charged via Stripe PaymentIntent\n🏪 ${res.merchant}\n📦 ${res.product}\n🆔 ${(res.order_id || "").slice(0, 25)}…`,
                 }]);
               }
             } catch { /* ignore parse errors */ }
@@ -187,7 +187,7 @@ function ConciergeInner() {
                   if (u) setUser(u);
                 }
                 setUpgraded(true);
-                setMessages((prev) => [...prev, { role: "system", text: `✅ Subscription Activated\n⬆️ Upgraded to Boli ${newTier.charAt(0).toUpperCase() + newTier.slice(1)}\n♾️ Unlimited orders\n🎙️ Premium voice enabled` }]);
+                setMessages((prev) => [...prev, { role: "system", text: `✅ Subscription Activated — Live from Stripe\n⬆️ Upgraded to Boli ${newTier.charAt(0).toUpperCase() + newTier.slice(1)}\n♾️ Unlimited orders\n🎙️ Premium voice enabled` }]);
                 endSession();
                 setTimeout(async () => {
                   const urlRes = await fetch(`/api/agent/signed-url?tier=${newTier}`);
