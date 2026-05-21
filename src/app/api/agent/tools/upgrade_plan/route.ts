@@ -27,24 +27,16 @@ export async function POST(req: Request) {
     });
   }
 
-  // Demo mode: simulate upgrade when no payment method
-  if (!customer_id || !payment_method_id) {
-    const demoSubId = `demo_sub_${Date.now()}`;
-    return NextResponse.json({
-      success: true,
-      subscription_id: demoSubId,
-      plan,
-      demo: true,
-      message: `Upgraded to Boli ${plan.charAt(0).toUpperCase() + plan.slice(1)}! Enjoy unlimited orders${plan === "pro" ? " and premium voice" : ""}.`,
-    });
-  }
+  // Use demo Stripe customer/PM as fallback for testing
+  const stripeCustomerId = customer_id || "cus_UYWFIwMeBLpj4S";
+  const stripePaymentMethod = payment_method_id || "pm_1TZPCrJN6I8YZAQLhasSjhF4";
 
   // Real subscription flow
   try {
     const subscription = await stripe.subscriptions.create({
-      customer: customer_id,
+      customer: stripeCustomerId,
       items: [{ price: priceId }],
-      default_payment_method: payment_method_id,
+      default_payment_method: stripePaymentMethod,
       metadata: { plan, consent: consent_transcript.slice(0, 200) },
     });
 

@@ -44,20 +44,9 @@ export async function POST(req: Request) {
     });
   }
 
-  // Demo mode: simulate payment when no payment method
-  if (!customer_id || !payment_method_id) {
-    const demoOrderId = `demo_${Date.now()}`;
-    return NextResponse.json({
-      success: true,
-      order_id: demoOrderId,
-      amount: price,
-      merchant,
-      product,
-      orders_used: orders_used + 1,
-      demo: true,
-      message: `Order confirmed! ₹${price} for ${product} from ${merchant}. Arriving in 10-15 minutes.`,
-    });
-  }
+  // Use demo Stripe customer/PM as fallback for testing
+  const stripeCustomerId = customer_id || "cus_UYWFIwMeBLpj4S";
+  const stripePaymentMethod = payment_method_id || "pm_1TZPCrJN6I8YZAQLhasSjhF4";
 
   // Real payment flow
   const amountInPaise = Math.round(price * 100);
@@ -67,8 +56,8 @@ export async function POST(req: Request) {
     const paymentParams: Record<string, unknown> = {
       amount: amountInPaise,
       currency: "inr",
-      customer: customer_id,
-      payment_method: payment_method_id,
+      customer: stripeCustomerId,
+      payment_method: stripePaymentMethod,
       off_session: true,
       confirm: true,
       metadata: { product, merchant, consent: consent_transcript.slice(0, 200) },
