@@ -188,14 +188,22 @@ function ConciergeInner() {
         <Link href="/" className="text-xl font-bold tracking-tight">
           Boli<span className="text-emerald-400">.</span>
         </Link>
-        <span className="text-sm text-gray-400">
-          {user ? (
-            <>
-              {user.name} · <span className="text-emerald-400 capitalize">{user.tier}</span>
-              {user.tier === "free" && ` · ${remaining} left`}
-            </>
-          ) : "Voice Concierge"}
-        </span>
+        {user && (
+          <div className="flex items-center gap-2">
+            <span className={`px-2 py-0.5 text-xs font-semibold rounded-full ${
+              user.tier === "pro" ? "bg-purple-500/20 text-purple-300 border border-purple-500/30"
+              : user.tier === "plus" ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"
+              : "bg-gray-700/50 text-gray-400 border border-gray-600"
+            }`}>
+              {user.tier === "free" ? "Free" : user.tier === "plus" ? "Plus ✦" : "Pro ✦"}
+            </span>
+            <span className="text-xs text-gray-500">
+              {user.tier === "free"
+                ? `${remaining}/${3} orders left`
+                : "Unlimited orders"}
+            </span>
+          </div>
+        )}
       </header>
 
       {/* Center content */}
