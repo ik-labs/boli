@@ -48,8 +48,8 @@ export async function POST(req: Request) {
   }
 
   // Use demo Stripe customer/PM as fallback for testing
-  const stripeCustomerId = customer_id || "cus_UYWFIwMeBLpj4S";
-  const stripePaymentMethod = payment_method_id || "pm_1TZPCrJN6I8YZAQLhasSjhF4";
+  const stripeCustomerId = customer_id || "cus_UYWZUUdrJlWjH9";
+  const stripePaymentMethod = payment_method_id || "pm_1TZPWfJN6I8YZAQLzXMytz08";
 
   // Real payment flow
   const amountInPaise = Math.round(price * 100);
