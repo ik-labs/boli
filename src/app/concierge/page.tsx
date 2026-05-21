@@ -236,17 +236,21 @@ function ConciergeInner() {
         {/* Orb */}
         <button
           onClick={handleToggle}
-          className="relative w-40 h-40 rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
+          className="relative w-44 h-44 rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
           aria-label={isActive ? "End conversation" : "Start conversation"}
         >
-          <Orb
-            colors={isActive ? ["#34d399", "#10b981"] : ["#6b7280", "#4b5563"]}
-            agentState={
-              (status === "connected"
-                ? isSpeaking ? "talking" : "listening"
-                : status === "connecting" ? "thinking" : null) as AgentState
-            }
-          />
+          <div className="w-full h-full rounded-full bg-gray-800/50 border border-gray-700/50 p-2 shadow-xl">
+            <div className="w-full h-full rounded-full overflow-hidden">
+              <Orb
+                colors={isActive ? ["#6ee7b7", "#34d399"] : ["#d1d5db", "#9ca3af"]}
+                agentState={
+                  (status === "connected"
+                    ? isSpeaking ? "talking" : "listening"
+                    : status === "connecting" ? "thinking" : null) as AgentState
+                }
+              />
+            </div>
+          </div>
         </button>
 
         {/* Status text */}
