@@ -10,6 +10,8 @@ import { db } from "@/lib/db";
 import { ordersRemaining } from "@/lib/tier";
 import type { User } from "@/types";
 import Link from "next/link";
+import { Orb } from "@/components/ui/orb";
+import type { AgentState } from "@/components/ui/orb";
 
 interface Message {
   role: "agent" | "user" | "system";
@@ -234,38 +236,17 @@ function ConciergeInner() {
         {/* Orb */}
         <button
           onClick={handleToggle}
-          className="relative flex items-center justify-center w-40 h-40 rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 group"
+          className="relative w-40 h-40 rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
           aria-label={isActive ? "End conversation" : "Start conversation"}
         >
-          {/* Ripples when speaking */}
-          {isActive && isSpeaking && (
-            <>
-              <span className="absolute inset-0 rounded-full bg-emerald-400/10 animate-ping" />
-              <span className="absolute inset-4 rounded-full bg-emerald-400/10 animate-pulse" />
-            </>
-          )}
-          {/* Breathing when connected idle */}
-          {isActive && !isSpeaking && (
-            <span className="absolute inset-4 rounded-full bg-emerald-400/5 animate-pulse" />
-          )}
-          {/* Connecting */}
-          {status === "connecting" && (
-            <span className="absolute inset-4 rounded-full border-2 border-gray-600 border-t-emerald-400 animate-spin" />
-          )}
-          {/* Core orb */}
-          <span
-            className={`relative w-28 h-28 rounded-full flex items-center justify-center text-4xl transition-all duration-300 shadow-2xl ${
-              isActive
-                ? isSpeaking
-                  ? "bg-emerald-500 shadow-emerald-500/30 scale-105"
-                  : "bg-emerald-600 shadow-emerald-600/20"
-                : status === "connecting"
-                  ? "bg-gray-700"
-                  : "bg-gray-800 group-hover:bg-gray-700 shadow-gray-900/50"
-            }`}
-          >
-            {isActive ? (isSpeaking ? "🗣️" : "🎙️") : status === "connecting" ? "⏳" : "🎤"}
-          </span>
+          <Orb
+            colors={isActive ? ["#34d399", "#10b981"] : ["#6b7280", "#4b5563"]}
+            agentState={
+              (status === "connected"
+                ? isSpeaking ? "talking" : "listening"
+                : status === "connecting" ? "thinking" : null) as AgentState
+            }
+          />
         </button>
 
         {/* Status text */}
