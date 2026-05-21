@@ -33,7 +33,7 @@ export default function OnboardingPage() {
       const stripe = await stripePromise;
       if (!stripe || !mounted) return;
       setStripeInstance(stripe);
-      const elements = stripe.elements();
+      const elements = (stripe as any).elements();
       const card = elements.create("card", {
         style: {
           base: { color: "#fff", fontSize: "16px", "::placeholder": { color: "#6b7280" } },
@@ -61,7 +61,6 @@ export default function OnboardingPage() {
 
     if (tier !== "free" && stripeInstance && cardElement) {
       // Confirm SetupIntent with card
-      const stripe = stripeInstance as ReturnType<Awaited<typeof stripePromise>["elements"]> & { confirmCardSetup: Function };
       const { error: stripeError, setupIntent } = await (stripeInstance as any).confirmCardSetup(clientSecret, {
         payment_method: { card: cardElement },
       });
