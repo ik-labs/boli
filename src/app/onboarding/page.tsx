@@ -24,6 +24,17 @@ export default function OnboardingPage() {
   const [cardElement, setCardElement] = useState<unknown>(null);
   const [stripeInstance, setStripeInstance] = useState<unknown>(null);
   const [error, setError] = useState("");
+  const [existingUser, setExistingUser] = useState<{ name: string; tier: Tier } | null>(null);
+
+  // Check if user already exists
+  useEffect(() => {
+    const userId = localStorage.getItem("boli_user_id");
+    if (userId) {
+      db.users.get(userId).then((u) => {
+        if (u) setExistingUser({ name: u.name, tier: u.tier });
+      });
+    }
+  }, []);
 
   // Mount Stripe card element when on step 3 (card input)
   useEffect(() => {
@@ -132,8 +143,32 @@ export default function OnboardingPage() {
           ))}
         </div>
 
+        {/* Already onboarded */}
+        {existingUser && step === 1 && (
+          <div className="space-y-4">
+            <div className="p-4 bg-gray-800 border border-gray-700 rounded-xl">
+              <p className="text-sm text-gray-300">Welcome back, <span className="font-semibold text-white">{existingUser.name}</span></p>
+              <p className="text-xs text-gray-500 mt-1">
+                Current plan: <span className={`font-medium ${existingUser.tier === "free" ? "text-gray-400" : "text-emerald-400"}`}>{existingUser.tier.charAt(0).toUpperCase() + existingUser.tier.slice(1)}</span>
+              </p>
+            </div>
+            <button
+              onClick={() => router.push("/concierge")}
+              className="w-full py-3 bg-emerald-500 hover:bg-emerald-400 text-gray-950 text-sm font-semibold rounded-full transition-colors"
+            >
+              Go to Concierge →
+            </button>
+            <button
+              onClick={() => setExistingUser(null)}
+              className="w-full py-2 text-xs text-gray-500 hover:text-gray-300 transition-colors"
+            >
+              Start fresh (new account)
+            </button>
+          </div>
+        )}
+
         {/* Step 1: Details */}
-        {step === 1 && (
+        {step === 1 && !existingUser && (
           <div className="space-y-4">
             {[
               { key: "name", type: "text", placeholder: "Name" },
