@@ -63,6 +63,11 @@ export async function POST(req: Request) {
       payment_method: stripePaymentMethod,
       off_session: true,
       confirm: true,
+      description: `Boli order: ${product} from ${merchant}`,
+      shipping: {
+        name: "Boli User",
+        address: { line1: "123 Demo Street", city: "Mumbai", country: "IN", postal_code: "400001" },
+      },
       metadata: { product, merchant, consent: consent_transcript.slice(0, 200) },
     };
 
