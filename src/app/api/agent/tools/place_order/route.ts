@@ -13,6 +13,7 @@ const CONSENT_REGEX = /\b(yes|confirm|go ahead|place it|do it|haan|theek hai|oka
 
 export async function POST(req: Request) {
   const body = await req.json();
+  console.log("place_order received:", JSON.stringify(body));
   const {
     customer_id,
     payment_method_id,
