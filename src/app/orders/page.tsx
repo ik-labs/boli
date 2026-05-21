@@ -35,8 +35,9 @@ export default function OrdersPage() {
         {orders.length === 0 ? (
           <div className="text-center py-20">
             <p className="text-4xl mb-3">🛒</p>
-            <p className="text-gray-500">No orders yet.</p>
-            <p className="text-sm text-gray-600 mt-1">Start a conversation to place your first order.</p>
+            <p className="text-gray-500">No orders found in this browser.</p>
+            <p className="text-sm text-gray-600 mt-1">Orders are stored locally. If you ordered in a different session, they may not appear here.</p>
+            <p className="text-xs text-gray-700 mt-4">Check Stripe Dashboard for all transactions →</p>
           </div>
         ) : (
           <div className="space-y-2">

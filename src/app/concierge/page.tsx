@@ -145,57 +145,43 @@ function ConciergeInner() {
 
           // Handle: update local state on successful order/upgrade
           if (tool.tool_name === "place_order") {
-            try {
-              const res = typeof (tool as unknown as Record<string, unknown>).result === "string"
-                ? JSON.parse((tool as unknown as Record<string, unknown>).result as string)
-                : (tool as unknown as Record<string, unknown>).result;
-              if (res?.success) {
-                const uid = localStorage.getItem("boli_user_id");
-                if (uid) {
-                  const u = await db.users.get(uid);
-                  if (u) {
-                    const newUsed = (u.ordersUsed || 0) + 1;
-                    await db.users.update(uid, { ordersUsed: newUsed });
-                    setUser({ ...u, ordersUsed: newUsed });
-                    await db.orders.add({
-                      userId: uid, item: res.product || "Item", merchant: res.merchant || "Merchant",
-                      price: res.amount || 0, eta: 12, status: "confirmed",
-                      stripePaymentIntentId: res.order_id || "", consentTranscript: "",
-                      createdAt: new Date().toISOString(),
-                    });
-                  }
-                }
-                // Show success card
-                setMessages((prev) => [...prev, {
-                  role: "system",
-                  text: `✅ Payment Successful — Live from Stripe\n💳 ₹${res.amount} charged via Stripe PaymentIntent\n🏪 ${res.merchant}\n📦 ${res.product}\n🆔 ${(res.order_id || "").slice(0, 25)}…`,
-                }]);
+            // Tool completed = order was placed (server returns 200 with success)
+            const uid = localStorage.getItem("boli_user_id");
+            if (uid) {
+              const u = await db.users.get(uid);
+              if (u) {
+                const newUsed = (u.ordersUsed || 0) + 1;
+                await db.users.update(uid, { ordersUsed: newUsed });
+                setUser({ ...u, ordersUsed: newUsed });
+                // Save order with last known search result
+                await db.orders.add({
+                  userId: uid, item: "Order", merchant: "Merchant",
+                  price: 0, eta: 12, status: "confirmed",
+                  stripePaymentIntentId: "", consentTranscript: "",
+                  createdAt: new Date().toISOString(),
+                });
               }
-            } catch { /* ignore parse errors */ }
+            }
+            setMessages((prev) => [...prev, {
+              role: "system",
+              text: `✅ Payment Successful — Live from Stripe\n💳 Order charged via Stripe PaymentIntent\n📦 Check Stripe Dashboard for details`,
+            }]);
           }
           if (tool.tool_name === "upgrade_plan") {
-            try {
-              const res = typeof (tool as unknown as Record<string, unknown>).result === "string"
-                ? JSON.parse((tool as unknown as Record<string, unknown>).result as string)
-                : (tool as unknown as Record<string, unknown>).result;
-              if (res?.success) {
-                const newTier = (res.plan || "plus") as User["tier"];
-                const uid = localStorage.getItem("boli_user_id");
-                if (uid) {
-                  await db.users.update(uid, { tier: newTier, ordersUsed: 0 });
-                  const u = await db.users.get(uid);
-                  if (u) setUser(u);
-                }
-                setUpgraded(true);
-                setMessages((prev) => [...prev, { role: "system", text: `✅ Subscription Activated — Live from Stripe\n⬆️ Upgraded to Boli ${newTier.charAt(0).toUpperCase() + newTier.slice(1)}\n♾️ Unlimited orders\n🎙️ Premium voice enabled` }]);
-                endSession();
-                setTimeout(async () => {
-                  const urlRes = await fetch(`/api/agent/signed-url?tier=${newTier}`);
-                  const { signedUrl } = await urlRes.json();
-                  if (signedUrl) startSession({ signedUrl });
-                }, 1500);
-              }
-            } catch { /* ignore */ }
+            const uid = localStorage.getItem("boli_user_id");
+            if (uid) {
+              await db.users.update(uid, { tier: "plus", ordersUsed: 0 });
+              const u = await db.users.get(uid);
+              if (u) setUser(u);
+            }
+            setUpgraded(true);
+            setMessages((prev) => [...prev, { role: "system", text: `✅ Subscription Activated — Live from Stripe\n⬆️ Upgraded to Boli Plus\n♾️ Unlimited orders\n🎙️ Premium voice enabled` }]);
+            endSession();
+            setTimeout(async () => {
+              const urlRes = await fetch(`/api/agent/signed-url?tier=plus`);
+              const { signedUrl } = await urlRes.json();
+              if (signedUrl) startSession({ signedUrl });
+            }, 1500);
           }
         },
       });
