@@ -6,8 +6,7 @@
     { "id": "bb2", "name": "Amul Toned Milk", "category": "dairy", "price": 31, "unit": "500ml", "inStock": true, "eta": 14 },
     { "id": "bb3", "name": "Toor Dal", "category": "staples", "price": 158, "unit": "1kg", "inStock": true, "eta": 14 },
     { "id": "bb4", "name": "Fortune Sunflower Oil", "category": "staples", "price": 139, "unit": "1L", "inStock": true, "eta": 15 },
-    { "id": "bb5", "name": "Farm Eggs", "category": "dairy", "price": 85, "unit": "12pcs", "inStock": true, "eta": 14 },
-    { "id": "bb6", "name": "Britannia Bread", "category": "bakery", "price": 48, "unit": "400g", "inStock": false, "eta": 0 },
+    { "id": "bb5", "name": "Britannia Bread", "category": "bakery", "price": 48, "unit": "400g", "inStock": false, "eta": 0 },
     { "id": "bb7", "name": "Tata Sugar", "category": "staples", "price": 46, "unit": "1kg", "inStock": true, "eta": 14 },
     { "id": "bb8", "name": "Tata Salt", "category": "staples", "price": 26, "unit": "1kg", "inStock": true, "eta": 14 },
     { "id": "bb9", "name": "Tata Tea Gold", "category": "beverages", "price": 305, "unit": "500g", "inStock": true, "eta": 15 },
@@ -16,8 +15,6 @@
     { "id": "bb12", "name": "Amul Dahi", "category": "dairy", "price": 33, "unit": "400g", "inStock": true, "eta": 14 },
     { "id": "bb13", "name": "Amul Ghee", "category": "dairy", "price": 555, "unit": "1L", "inStock": true, "eta": 15 },
     { "id": "bb14", "name": "India Gate Basmati Rice", "category": "staples", "price": 385, "unit": "5kg", "inStock": true, "eta": 15 },
-    { "id": "bb15", "name": "Amul Paneer", "category": "dairy", "price": 92, "unit": "200g", "inStock": true, "eta": 14 },
-    { "id": "bb16", "name": "Onion", "category": "vegetables", "price": 32, "unit": "1kg", "inStock": true, "eta": 13 },
-    { "id": "bb17", "name": "Potato", "category": "vegetables", "price": 26, "unit": "1kg", "inStock": true, "eta": 13 }
+    { "id": "bb15", "name": "Amul Paneer", "category": "dairy", "price": 92, "unit": "200g", "inStock": true, "eta": 14 }
   ]
 }

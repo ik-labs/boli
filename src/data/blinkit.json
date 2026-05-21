@@ -6,8 +6,7 @@
     { "id": "b2", "name": "Amul Toned Milk", "category": "dairy", "price": 30, "unit": "500ml", "inStock": true, "eta": 11 },
     { "id": "b3", "name": "Toor Dal", "category": "staples", "price": 155, "unit": "1kg", "inStock": true, "eta": 12 },
     { "id": "b4", "name": "Fortune Sunflower Oil", "category": "staples", "price": 152, "unit": "1L", "inStock": true, "eta": 13 },
-    { "id": "b5", "name": "Farm Eggs", "category": "dairy", "price": 78, "unit": "12pcs", "inStock": true, "eta": 11 },
-    { "id": "b6", "name": "Britannia Bread", "category": "bakery", "price": 42, "unit": "400g", "inStock": true, "eta": 10 },
+    { "id": "b5", "name": "Britannia Bread", "category": "bakery", "price": 42, "unit": "400g", "inStock": true, "eta": 10 },
     { "id": "b7", "name": "Tata Sugar", "category": "staples", "price": 50, "unit": "1kg", "inStock": true, "eta": 12 },
     { "id": "b8", "name": "Tata Salt", "category": "staples", "price": 27, "unit": "1kg", "inStock": true, "eta": 11 },
     { "id": "b9", "name": "Tata Tea Gold", "category": "beverages", "price": 310, "unit": "500g", "inStock": true, "eta": 12 },
@@ -16,8 +15,6 @@
     { "id": "b12", "name": "Amul Dahi", "category": "dairy", "price": 38, "unit": "400g", "inStock": true, "eta": 11 },
     { "id": "b13", "name": "Amul Ghee", "category": "dairy", "price": 565, "unit": "1L", "inStock": true, "eta": 13 },
     { "id": "b14", "name": "India Gate Basmati Rice", "category": "staples", "price": 415, "unit": "5kg", "inStock": false, "eta": 0 },
-    { "id": "b15", "name": "Amul Paneer", "category": "dairy", "price": 90, "unit": "200g", "inStock": true, "eta": 11 },
-    { "id": "b16", "name": "Onion", "category": "vegetables", "price": 38, "unit": "1kg", "inStock": true, "eta": 10 },
-    { "id": "b17", "name": "Potato", "category": "vegetables", "price": 28, "unit": "1kg", "inStock": true, "eta": 10 }
+    { "id": "b15", "name": "Amul Paneer", "category": "dairy", "price": 90, "unit": "200g", "inStock": true, "eta": 11 }
   ]
 }
