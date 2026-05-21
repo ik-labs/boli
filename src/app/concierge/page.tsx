@@ -248,7 +248,7 @@ function ConciergeInner() {
           <div className="mt-4 text-center space-y-2">
             <p className="text-xs text-gray-500">Try saying:</p>
             <div className="flex flex-wrap justify-center gap-2">
-              {["Reorder my usual atta", "Find me cheap milk", "Order eggs"].map((s) => (
+              {["Reorder my usual atta", "Find me cheap milk", "Order some dal"].map((s) => (
                 <span key={s} className="px-3 py-1.5 bg-gray-800 border border-gray-700 rounded-full text-xs text-gray-300">
                   &ldquo;{s}&rdquo;
                 </span>
