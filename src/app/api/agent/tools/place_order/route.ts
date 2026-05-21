@@ -9,7 +9,7 @@ const CONNECT_ACCOUNTS: Record<string, string | undefined> = {
   bigbasket: process.env.STRIPE_CONNECT_BIGBASKET,
 };
 
-const CONSENT_REGEX = /\b(yes|confirm|go ahead|place it|do it|haan|theek hai|okay)\b/i;
+const CONSENT_REGEX = /\b(yes|yep|yeah|sure|confirm|go ahead|place it|do it|proceed|order|haan|theek hai|okay|ok|alright)\b/i;
 
 export async function POST(req: Request) {
   const body = await req.json();
