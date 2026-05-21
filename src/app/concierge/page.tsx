@@ -1,14 +1,11 @@
 "use client";
 
-/* Hallmark · pre-emit critique: P5 H4 E4 S4 R5 V4 */
-
 import { useState, useCallback, useEffect, useRef } from "react";
 import {
   ConversationProvider,
   useConversationControls,
   useConversationStatus,
 } from "@elevenlabs/react";
-import { VoiceOrb } from "@/components/VoiceOrb";
 import { db } from "@/lib/db";
 import { ordersRemaining } from "@/lib/tier";
 import type { User } from "@/types";
@@ -48,11 +45,10 @@ function ConciergeInner() {
       const res = await fetch(`/api/stripe/webhook?customer_id=${customerId}`);
       const data = await res.json();
       if (data.updated && user) {
-        const newUser = { ...user, tier: data.tier as User["tier"] };
         await db.users.update(user.id, { tier: data.tier });
-        setUser(newUser);
+        setUser({ ...user, tier: data.tier as User["tier"] });
         setUpgraded(true);
-        setMessages((prev) => [...prev, { role: "system", text: `Upgraded to ${data.tier}. Reconnecting with premium voice…` }]);
+        setMessages((prev) => [...prev, { role: "system", text: `Upgraded to ${data.tier}! Reconnecting with premium voice…` }]);
         if (pollRef.current) clearInterval(pollRef.current);
         pollRef.current = null;
         endSession();
@@ -101,60 +97,107 @@ function ConciergeInner() {
   }, [status, user, startSession, endSession, startPolling]);
 
   const remaining = ordersRemaining(user?.tier || "free", user?.ordersUsed || 0);
+  const isActive = status === "connected";
 
   return (
-    <main className="min-h-dvh bg-[oklch(10%_0.01_160)] text-[oklch(94%_0.005_160)] flex flex-col">
+    <main className="min-h-dvh bg-gradient-to-b from-gray-950 to-gray-900 text-white flex flex-col">
       {/* Header */}
-      <header className="px-5 pt-6 pb-4 flex items-center justify-between">
-        <Link href="/" className="text-lg font-semibold tracking-tight">
-          Boli<span className="text-[oklch(72%_0.19_160)]">.</span>
+      <header className="px-6 pt-5 pb-4 flex items-center justify-between">
+        <Link href="/" className="text-xl font-bold tracking-tight">
+          Boli<span className="text-emerald-400">.</span>
         </Link>
-        <span className="text-xs text-[oklch(50%_0.005_160)]">
+        <span className="text-sm text-gray-400">
           {user ? (
             <>
-              {user.name} · <span className="capitalize text-[oklch(72%_0.19_160)]">{user.tier}</span>
+              {user.name} · <span className="text-emerald-400 capitalize">{user.tier}</span>
               {user.tier === "free" && ` · ${remaining} left`}
             </>
           ) : "Voice Concierge"}
         </span>
       </header>
 
-      {/* Main content — centered orb */}
-      <div className="flex-1 flex flex-col items-center justify-center px-5 gap-6">
+      {/* Center content */}
+      <div className="flex-1 flex flex-col items-center justify-center px-6 gap-5">
         {upgraded && (
-          <p className="text-xs text-[oklch(72%_0.19_160)] font-medium animate-pulse">
+          <div className="px-4 py-2 bg-emerald-500/10 border border-emerald-500/30 rounded-full text-sm text-emerald-400 animate-pulse">
             ✦ Premium voice activated
-          </p>
+          </div>
         )}
 
-        <VoiceOrb
-          status={status === "error" ? "disconnected" : status}
-          isSpeaking={isSpeaking}
+        {/* Orb */}
+        <button
           onClick={handleToggle}
-        />
+          className="relative flex items-center justify-center w-40 h-40 rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 group"
+          aria-label={isActive ? "End conversation" : "Start conversation"}
+        >
+          {/* Ripples when speaking */}
+          {isActive && isSpeaking && (
+            <>
+              <span className="absolute inset-0 rounded-full bg-emerald-400/10 animate-ping" />
+              <span className="absolute inset-4 rounded-full bg-emerald-400/10 animate-pulse" />
+            </>
+          )}
+          {/* Breathing when connected idle */}
+          {isActive && !isSpeaking && (
+            <span className="absolute inset-4 rounded-full bg-emerald-400/5 animate-pulse" />
+          )}
+          {/* Connecting */}
+          {status === "connecting" && (
+            <span className="absolute inset-4 rounded-full border-2 border-gray-600 border-t-emerald-400 animate-spin" />
+          )}
+          {/* Core orb */}
+          <span
+            className={`relative w-28 h-28 rounded-full flex items-center justify-center text-4xl transition-all duration-300 shadow-2xl ${
+              isActive
+                ? isSpeaking
+                  ? "bg-emerald-500 shadow-emerald-500/30 scale-105"
+                  : "bg-emerald-600 shadow-emerald-600/20"
+                : status === "connecting"
+                  ? "bg-gray-700"
+                  : "bg-gray-800 group-hover:bg-gray-700 shadow-gray-900/50"
+            }`}
+          >
+            {isActive ? (isSpeaking ? "🗣️" : "🎙️") : status === "connecting" ? "⏳" : "🎤"}
+          </span>
+        </button>
 
-        <p className="text-xs text-[oklch(40%_0.005_160)]">
-          {status === "disconnected" && "Tap to start"}
+        {/* Status text */}
+        <p className={`text-sm ${isActive ? "text-emerald-400" : "text-gray-500"}`}>
+          {status === "disconnected" && "Tap to start talking"}
           {status === "connecting" && "Connecting…"}
-          {status === "connected" && "Listening"}
+          {status === "connected" && (isSpeaking ? "Boli is speaking…" : "Listening — say something!")}
         </p>
+
+        {/* Suggestions when idle */}
+        {status === "disconnected" && messages.length === 0 && (
+          <div className="mt-4 text-center space-y-2">
+            <p className="text-xs text-gray-500">Try saying:</p>
+            <div className="flex flex-wrap justify-center gap-2">
+              {["Reorder my usual atta", "Find me cheap milk", "Order eggs"].map((s) => (
+                <span key={s} className="px-3 py-1.5 bg-gray-800 border border-gray-700 rounded-full text-xs text-gray-300">
+                  &ldquo;{s}&rdquo;
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Transcript */}
       {messages.length > 0 && (
         <div
           ref={transcriptRef}
-          className="max-h-[40vh] overflow-y-auto px-5 pb-4 space-y-2 scroll-smooth"
+          className="max-h-[35vh] overflow-y-auto px-6 pb-4 space-y-2"
         >
           {messages.map((msg, i) => (
             <div
               key={i}
-              className={`text-sm px-3 py-2 rounded-lg ${
+              className={`text-sm px-4 py-2.5 rounded-xl ${
                 msg.role === "agent"
-                  ? "bg-[oklch(15%_0.01_160)] text-[oklch(80%_0.005_160)]"
+                  ? "bg-gray-800 text-gray-200 mr-12"
                   : msg.role === "system"
-                    ? "text-center text-xs text-[oklch(72%_0.19_160)]"
-                    : "bg-[oklch(72%_0.19_160)/8%] text-[oklch(80%_0.005_160)] ml-8"
+                    ? "text-center text-xs text-emerald-400 py-1"
+                    : "bg-emerald-900/30 text-emerald-100 ml-12"
               }`}
             >
               {msg.text}
@@ -164,9 +207,9 @@ function ConciergeInner() {
       )}
 
       {/* Footer nav */}
-      <nav className="px-5 py-4 border-t border-[oklch(18%_0.01_160)] flex justify-center gap-6 text-xs text-[oklch(40%_0.005_160)]">
-        <Link href="/orders" className="hover:text-white transition-colors py-1">Orders</Link>
-        <Link href="/onboarding" className="hover:text-white transition-colors py-1">Settings</Link>
+      <nav className="px-6 py-4 border-t border-gray-800 flex justify-center gap-8 text-sm text-gray-500">
+        <Link href="/orders" className="hover:text-white transition-colors">Orders</Link>
+        <Link href="/onboarding" className="hover:text-white transition-colors">Settings</Link>
       </nav>
     </main>
   );

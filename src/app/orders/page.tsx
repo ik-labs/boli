@@ -17,41 +17,41 @@ export default function OrdersPage() {
   }, []);
 
   return (
-    <main className="min-h-dvh bg-[oklch(10%_0.01_160)] text-[oklch(94%_0.005_160)] px-5 py-8">
+    <main className="min-h-dvh bg-gradient-to-b from-gray-950 to-gray-900 text-white px-6 py-8">
       <div className="max-w-lg mx-auto space-y-6">
         <header className="flex items-baseline justify-between">
           <h1 className="text-xl font-bold tracking-tight">Orders</h1>
-          <Link href="/concierge" className="text-xs text-[oklch(72%_0.19_160)] hover:underline">
+          <Link href="/concierge" className="text-sm text-emerald-400 hover:underline">
             ← Concierge
           </Link>
         </header>
 
         {user && (
-          <p className="text-xs text-[oklch(45%_0.005_160)]">
-            {user.name} · <span className="capitalize text-[oklch(72%_0.19_160)]">{user.tier}</span> · {user.ordersUsed} this month
+          <p className="text-sm text-gray-400">
+            {user.name} · <span className="text-emerald-400 capitalize">{user.tier}</span> · {user.ordersUsed} this month
           </p>
         )}
 
         {orders.length === 0 ? (
-          <p className="text-sm text-[oklch(40%_0.005_160)] text-center py-16">
-            No orders yet. Start a conversation to place your first.
-          </p>
+          <div className="text-center py-20">
+            <p className="text-4xl mb-3">🛒</p>
+            <p className="text-gray-500">No orders yet.</p>
+            <p className="text-sm text-gray-600 mt-1">Start a conversation to place your first order.</p>
+          </div>
         ) : (
-          <div className="space-y-px bg-[oklch(18%_0.01_160)] rounded-lg overflow-hidden">
+          <div className="space-y-2">
             {orders.map((order) => (
-              <div key={order.id} className="bg-[oklch(12%_0.01_160)] p-4 flex items-center justify-between">
+              <div key={order.id} className="p-4 bg-gray-800/50 border border-gray-800 rounded-xl flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium">{order.item}</p>
-                  <p className="text-xs text-[oklch(45%_0.005_160)]">
-                    {order.merchant} · {order.eta}m · {new Date(order.createdAt).toLocaleDateString()}
-                  </p>
+                  <p className="text-xs text-gray-500">{order.merchant} · {order.eta}m · {new Date(order.createdAt).toLocaleDateString()}</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-sm font-medium text-[oklch(72%_0.19_160)]">₹{order.price}</p>
+                  <p className="text-sm font-semibold text-emerald-400">₹{order.price}</p>
                   <p className={`text-xs ${
-                    order.status === "confirmed" ? "text-[oklch(75%_0.15_80)]"
-                    : order.status === "delivered" ? "text-[oklch(72%_0.19_160)]"
-                    : "text-[oklch(65%_0.2_25)]"
+                    order.status === "confirmed" ? "text-amber-400"
+                    : order.status === "delivered" ? "text-emerald-400"
+                    : "text-red-400"
                   }`}>{order.status}</p>
                 </div>
               </div>

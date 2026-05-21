@@ -1,15 +1,13 @@
 "use client";
 
-/* Hallmark · pre-emit critique: P4 H4 E4 S4 R5 V4 */
-
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { db } from "@/lib/db";
 import type { Tier } from "@/types";
 
 const TIERS: { id: Tier; name: string; price: string; note: string }[] = [
-  { id: "free", name: "Free", price: "₹0", note: "3 orders / month" },
-  { id: "plus", name: "Plus", price: "₹299", note: "Unlimited · premium voice" },
+  { id: "free", name: "Free", price: "₹0", note: "3 orders / month · standard voice" },
+  { id: "plus", name: "Plus", price: "₹299", note: "Unlimited orders · premium voice" },
   { id: "pro", name: "Pro", price: "₹599", note: "Unlimited · multilingual · patterns" },
 ];
 
@@ -45,27 +43,21 @@ export default function OnboardingPage() {
   };
 
   return (
-    <main className="min-h-dvh bg-[oklch(10%_0.01_160)] text-[oklch(94%_0.005_160)] flex items-center justify-center px-5 py-12">
+    <main className="min-h-dvh bg-gradient-to-b from-gray-950 to-gray-900 text-white flex items-center justify-center px-6 py-12">
       <div className="w-full max-w-sm space-y-8">
-        {/* Header */}
         <div>
           <h1 className="text-2xl font-bold tracking-tight">
-            Boli<span className="text-[oklch(72%_0.19_160)]">.</span>
+            Boli<span className="text-emerald-400">.</span>
           </h1>
-          <p className="text-xs text-[oklch(45%_0.005_160)] mt-1">
-            {step === 1 ? "Your details" : "Choose a plan"}
+          <p className="text-sm text-gray-400 mt-1">
+            {step === 1 ? "Enter your details" : "Choose a plan"}
           </p>
         </div>
 
         {/* Progress */}
-        <div className="flex gap-1.5">
+        <div className="flex gap-2">
           {[1, 2].map((s) => (
-            <div
-              key={s}
-              className={`h-0.5 flex-1 rounded-full transition-colors ${
-                s <= step ? "bg-[oklch(72%_0.19_160)]" : "bg-[oklch(22%_0.01_160)]"
-              }`}
-            />
+            <div key={s} className={`h-1 flex-1 rounded-full ${s <= step ? "bg-emerald-500" : "bg-gray-800"}`} />
           ))}
         </div>
 
@@ -82,13 +74,13 @@ export default function OnboardingPage() {
                 placeholder={f.placeholder}
                 value={form[f.key as keyof typeof form]}
                 onChange={(e) => setForm({ ...form, [f.key]: e.target.value })}
-                className="w-full px-4 py-3 bg-[oklch(14%_0.01_160)] border border-[oklch(22%_0.01_160)] rounded-lg text-sm placeholder:text-[oklch(35%_0.005_160)] focus:outline-none focus:border-[oklch(72%_0.19_160)] transition-colors"
+                className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-sm text-white placeholder:text-gray-500 focus:outline-none focus:border-emerald-500 transition-colors"
               />
             ))}
             <button
               onClick={() => setStep(2)}
               disabled={!form.name || !form.email}
-              className="w-full py-3 bg-[oklch(72%_0.19_160)] text-[oklch(10%_0.01_160)] text-sm font-medium rounded-full disabled:opacity-30 transition-opacity"
+              className="w-full py-3 bg-emerald-500 hover:bg-emerald-400 text-gray-950 text-sm font-semibold rounded-full disabled:opacity-30 disabled:hover:bg-emerald-500 transition-colors"
             >
               Continue
             </button>
@@ -101,31 +93,30 @@ export default function OnboardingPage() {
               <button
                 key={t.id}
                 onClick={() => setTier(t.id)}
-                className={`w-full p-4 rounded-lg border text-left transition-all ${
+                className={`w-full p-4 rounded-xl border text-left transition-all ${
                   tier === t.id
-                    ? "border-[oklch(72%_0.19_160)] bg-[oklch(72%_0.19_160)/6%]"
-                    : "border-[oklch(22%_0.01_160)] hover:border-[oklch(30%_0.01_160)]"
+                    ? "border-emerald-500 bg-emerald-500/10"
+                    : "border-gray-700 bg-gray-800/50 hover:border-gray-600"
                 }`}
               >
                 <div className="flex items-baseline justify-between">
-                  <span className="text-sm font-medium">{t.name}</span>
-                  <span className="text-xs text-[oklch(72%_0.19_160)]">{t.price}/mo</span>
+                  <span className="text-sm font-semibold">{t.name}</span>
+                  <span className="text-xs font-medium text-emerald-400">{t.price}/mo</span>
                 </div>
-                <p className="text-xs text-[oklch(50%_0.005_160)] mt-1">{t.note}</p>
+                <p className="text-xs text-gray-400 mt-1">{t.note}</p>
               </button>
             ))}
-
             <div className="flex gap-3 pt-2">
               <button
                 onClick={() => setStep(1)}
-                className="flex-1 py-3 border border-[oklch(22%_0.01_160)] text-sm rounded-full hover:border-[oklch(35%_0.01_160)] transition-colors"
+                className="flex-1 py-3 border border-gray-700 hover:border-gray-500 text-sm rounded-full transition-colors"
               >
                 Back
               </button>
               <button
                 onClick={handleSubmit}
                 disabled={loading}
-                className="flex-[2] py-3 bg-[oklch(72%_0.19_160)] text-[oklch(10%_0.01_160)] text-sm font-medium rounded-full disabled:opacity-50 transition-opacity"
+                className="flex-[2] py-3 bg-emerald-500 hover:bg-emerald-400 text-gray-950 text-sm font-semibold rounded-full disabled:opacity-50 transition-colors"
               >
                 {loading ? "Setting up…" : "Start →"}
               </button>
