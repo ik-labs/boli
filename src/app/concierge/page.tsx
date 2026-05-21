@@ -129,7 +129,9 @@ function ConciergeInner() {
           // Handle demo mode: update local state on successful order/upgrade
           if (tool.tool_name === "place_order" && user) {
             try {
-              const res = typeof tool.result === "string" ? JSON.parse(tool.result) : tool.result;
+              const res = typeof (tool as unknown as Record<string, unknown>).result === "string"
+                ? JSON.parse((tool as unknown as Record<string, unknown>).result as string)
+                : (tool as unknown as Record<string, unknown>).result;
               if (res?.success) {
                 const newUsed = (user.ordersUsed || 0) + 1;
                 db.users.update(user.id, { ordersUsed: newUsed });
@@ -145,7 +147,9 @@ function ConciergeInner() {
           }
           if (tool.tool_name === "upgrade_plan" && user) {
             try {
-              const res = typeof tool.result === "string" ? JSON.parse(tool.result) : tool.result;
+              const res = typeof (tool as unknown as Record<string, unknown>).result === "string"
+                ? JSON.parse((tool as unknown as Record<string, unknown>).result as string)
+                : (tool as unknown as Record<string, unknown>).result;
               if (res?.success) {
                 const newTier = (res.plan || "plus") as User["tier"];
                 db.users.update(user.id, { tier: newTier, ordersUsed: 0 });
