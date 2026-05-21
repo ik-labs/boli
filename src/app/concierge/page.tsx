@@ -1,5 +1,7 @@
 "use client";
 
+/* Hallmark · pre-emit critique: P5 H4 E4 S4 R5 V4 */
+
 import { useState, useCallback, useEffect, useRef } from "react";
 import {
   ConversationProvider,
@@ -34,17 +36,12 @@ function ConciergeInner() {
     }
   }, []);
 
-  // Auto-scroll transcript
   useEffect(() => {
     if (transcriptRef.current) {
-      transcriptRef.current.scrollTo({
-        top: transcriptRef.current.scrollHeight,
-        behavior: "smooth",
-      });
+      transcriptRef.current.scrollTo({ top: transcriptRef.current.scrollHeight, behavior: "smooth" });
     }
   }, [messages]);
 
-  // Poll for tier upgrades after subscription
   const startPolling = useCallback((customerId: string) => {
     if (pollRef.current) return;
     pollRef.current = setInterval(async () => {
@@ -55,81 +52,50 @@ function ConciergeInner() {
         await db.users.update(user.id, { tier: data.tier });
         setUser(newUser);
         setUpgraded(true);
-        setMessages((prev) => [
-          ...prev,
-          { role: "system", text: `🎉 Upgraded to ${data.tier}! Reconnecting with premium voice...` },
-        ]);
+        setMessages((prev) => [...prev, { role: "system", text: `Upgraded to ${data.tier}. Reconnecting with premium voice…` }]);
         if (pollRef.current) clearInterval(pollRef.current);
         pollRef.current = null;
-
-        // Reconnect with premium agent
         endSession();
         setTimeout(async () => {
           const urlRes = await fetch(`/api/agent/signed-url?tier=${data.tier}`);
           const { signedUrl } = await urlRes.json();
-          if (signedUrl) {
-            startSession({ signedUrl });
-          }
+          if (signedUrl) startSession({ signedUrl });
         }, 1000);
       }
     }, 3000);
   }, [user, endSession, startSession]);
 
-  useEffect(() => {
-    return () => {
-      if (pollRef.current) clearInterval(pollRef.current);
-    };
-  }, []);
+  useEffect(() => () => { if (pollRef.current) clearInterval(pollRef.current); }, []);
 
   const handleToggle = useCallback(async () => {
-    if (status === "connected") {
-      endSession();
-      return;
-    }
-
+    if (status === "connected") { endSession(); return; }
     const tier = user?.tier || "free";
     const res = await fetch(`/api/agent/signed-url?tier=${tier}`);
     const { signedUrl } = await res.json();
-
     if (signedUrl) {
       startSession({
         signedUrl,
         clientTools: {
-          get_user_context: async () => {
-            const remaining = ordersRemaining(
-              user?.tier || "free",
-              user?.ordersUsed || 0
-            );
-            return JSON.stringify({
-              userId: user?.id || "demo",
-              tier: user?.tier || "free",
-              ordersUsed: user?.ordersUsed || 0,
-              ordersRemaining: remaining,
-              name: user?.name || "Guest",
-              customerId: user?.stripeCustomerId || "",
-              paymentMethodId: user?.paymentMethodId || "",
-            });
-          },
+          get_user_context: async () => JSON.stringify({
+            userId: user?.id || "demo",
+            tier: user?.tier || "free",
+            ordersUsed: user?.ordersUsed || 0,
+            ordersRemaining: ordersRemaining(user?.tier || "free", user?.ordersUsed || 0),
+            name: user?.name || "Guest",
+            customerId: user?.stripeCustomerId || "",
+            paymentMethodId: user?.paymentMethodId || "",
+          }),
         },
         onMessage: (msg) => {
           setMessages((prev) => [...prev, { role: "agent", text: msg.message }]);
           setIsSpeaking(true);
           setTimeout(() => setIsSpeaking(false), 1500);
-
-          // If agent mentions upgrade, start polling
-          if (
-            user?.stripeCustomerId &&
-            msg.message.toLowerCase().includes("upgrad")
-          ) {
+          if (user?.stripeCustomerId && msg.message.toLowerCase().includes("upgrad")) {
             startPolling(user.stripeCustomerId);
           }
         },
-        onModeChange: (mode) => {
-          setIsSpeaking(mode.mode === "speaking");
-        },
-        onStatusChange: (s) => {
-          if (s.status === "disconnected") setIsSpeaking(false);
-        },
+        onModeChange: (mode) => setIsSpeaking(mode.mode === "speaking"),
+        onStatusChange: (s) => { if (s.status === "disconnected") setIsSpeaking(false); },
       });
     }
   }, [status, user, startSession, endSession, startPolling]);
@@ -137,29 +103,28 @@ function ConciergeInner() {
   const remaining = ordersRemaining(user?.tier || "free", user?.ordersUsed || 0);
 
   return (
-    <main className="min-h-dvh flex flex-col items-center justify-between px-5 py-8 bg-slate-900 text-white safe-area-inset">
-      <div className="w-full max-w-md flex flex-col items-center flex-1 justify-center space-y-6 text-center">
-        <div>
-          <h1 className="text-2xl font-bold">
-            Boli<span className="text-emerald-400">.</span>
-          </h1>
-          <p className="text-sm text-slate-400 mt-1">
-            {user ? (
-              <>
-                Hi {user.name} •{" "}
-                <span className="capitalize text-emerald-400">{user.tier}</span>
-                {user.tier === "free" && ` • ${remaining} orders left`}
-              </>
-            ) : (
-              "Voice Concierge"
-            )}
-          </p>
-        </div>
+    <main className="min-h-dvh bg-[oklch(10%_0.01_160)] text-[oklch(94%_0.005_160)] flex flex-col">
+      {/* Header */}
+      <header className="px-5 pt-6 pb-4 flex items-center justify-between">
+        <Link href="/" className="text-lg font-semibold tracking-tight">
+          Boli<span className="text-[oklch(72%_0.19_160)]">.</span>
+        </Link>
+        <span className="text-xs text-[oklch(50%_0.005_160)]">
+          {user ? (
+            <>
+              {user.name} · <span className="capitalize text-[oklch(72%_0.19_160)]">{user.tier}</span>
+              {user.tier === "free" && ` · ${remaining} left`}
+            </>
+          ) : "Voice Concierge"}
+        </span>
+      </header>
 
+      {/* Main content — centered orb */}
+      <div className="flex-1 flex flex-col items-center justify-center px-5 gap-6">
         {upgraded && (
-          <div className="px-4 py-2 bg-emerald-500/20 border border-emerald-500/50 rounded-lg text-sm text-emerald-300 animate-pulse">
-            ✨ Premium voice activated!
-          </div>
+          <p className="text-xs text-[oklch(72%_0.19_160)] font-medium animate-pulse">
+            ✦ Premium voice activated
+          </p>
         )}
 
         <VoiceOrb
@@ -168,53 +133,48 @@ function ConciergeInner() {
           onClick={handleToggle}
         />
 
-        <p className="text-xs text-slate-500">
-          {status === "disconnected" && "Tap to start talking"}
-          {status === "connecting" && "Connecting..."}
-          {status === "connected" && "Listening — say something!"}
+        <p className="text-xs text-[oklch(40%_0.005_160)]">
+          {status === "disconnected" && "Tap to start"}
+          {status === "connecting" && "Connecting…"}
+          {status === "connected" && "Listening"}
         </p>
-
-        {/* Transcript */}
-        {messages.length > 0 && (
-          <div
-            ref={transcriptRef}
-            className="max-h-60 overflow-y-auto space-y-2 text-left text-sm scroll-smooth"
-          >
-            {messages.map((msg, i) => (
-              <div
-                key={i}
-                className={`px-3 py-2 rounded-lg ${
-                  msg.role === "agent"
-                    ? "bg-slate-800 text-slate-200"
-                    : msg.role === "system"
-                      ? "bg-emerald-900/40 text-emerald-300 text-center text-xs"
-                      : "bg-emerald-900/30 text-emerald-200 ml-8"
-                }`}
-              >
-                {msg.text}
-              </div>
-            ))}
-          </div>
-        )}
-
-        <div className="flex gap-4 justify-center pt-4 text-sm">
-          <Link href="/orders" className="text-slate-400 hover:text-white active:text-emerald-400 py-2 px-3">
-            Order History
-          </Link>
-          <Link href="/onboarding" className="text-slate-400 hover:text-white active:text-emerald-400 py-2 px-3">
-            Settings
-          </Link>
-        </div>
       </div>
+
+      {/* Transcript */}
+      {messages.length > 0 && (
+        <div
+          ref={transcriptRef}
+          className="max-h-[40vh] overflow-y-auto px-5 pb-4 space-y-2 scroll-smooth"
+        >
+          {messages.map((msg, i) => (
+            <div
+              key={i}
+              className={`text-sm px-3 py-2 rounded-lg ${
+                msg.role === "agent"
+                  ? "bg-[oklch(15%_0.01_160)] text-[oklch(80%_0.005_160)]"
+                  : msg.role === "system"
+                    ? "text-center text-xs text-[oklch(72%_0.19_160)]"
+                    : "bg-[oklch(72%_0.19_160)/8%] text-[oklch(80%_0.005_160)] ml-8"
+              }`}
+            >
+              {msg.text}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Footer nav */}
+      <nav className="px-5 py-4 border-t border-[oklch(18%_0.01_160)] flex justify-center gap-6 text-xs text-[oklch(40%_0.005_160)]">
+        <Link href="/orders" className="hover:text-white transition-colors py-1">Orders</Link>
+        <Link href="/onboarding" className="hover:text-white transition-colors py-1">Settings</Link>
+      </nav>
     </main>
   );
 }
 
 export default function ConciergePage() {
   return (
-    <ConversationProvider
-      onError={(error) => console.error("Conversation error:", error)}
-    >
+    <ConversationProvider onError={(e) => console.error("Conversation error:", e)}>
       <ConciergeInner />
     </ConversationProvider>
   );

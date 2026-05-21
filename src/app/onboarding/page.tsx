@@ -1,14 +1,16 @@
 "use client";
 
+/* Hallmark · pre-emit critique: P4 H4 E4 S4 R5 V4 */
+
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { db } from "@/lib/db";
 import type { Tier } from "@/types";
 
-const TIERS: { id: Tier; name: string; price: string; features: string[] }[] = [
-  { id: "free", name: "Free", price: "₹0/mo", features: ["3 orders/month", "Standard voice", "Price comparison"] },
-  { id: "plus", name: "Plus", price: "₹299/mo", features: ["Unlimited orders", "Premium voice", "Priority support"] },
-  { id: "pro", name: "Pro", price: "₹599/mo", features: ["Unlimited orders", "Premium multilingual voice", "Pattern learning", "Priority support"] },
+const TIERS: { id: Tier; name: string; price: string; note: string }[] = [
+  { id: "free", name: "Free", price: "₹0", note: "3 orders / month" },
+  { id: "plus", name: "Plus", price: "₹299", note: "Unlimited · premium voice" },
+  { id: "pro", name: "Pro", price: "₹599", note: "Unlimited · multilingual · patterns" },
 ];
 
 export default function OnboardingPage() {
@@ -21,8 +23,6 @@ export default function OnboardingPage() {
   const handleSubmit = async () => {
     setLoading(true);
     const userId = crypto.randomUUID();
-
-    // Create Stripe customer if paid tier
     let stripeCustomerId: string | undefined;
     if (tier !== "free") {
       try {
@@ -33,122 +33,101 @@ export default function OnboardingPage() {
         });
         const data = await res.json();
         stripeCustomerId = data.customerId;
-      } catch {
-        // Continue without Stripe for now
-      }
+      } catch { /* continue */ }
     }
-
     await db.users.add({
-      id: userId,
-      name: form.name,
-      email: form.email,
-      tier,
-      ordersUsed: 0,
-      ordersResetAt: new Date(Date.now() + 30 * 86400000).toISOString(),
-      stripeCustomerId,
-      createdAt: new Date().toISOString(),
+      id: userId, name: form.name, email: form.email, tier,
+      ordersUsed: 0, ordersResetAt: new Date(Date.now() + 30 * 86400000).toISOString(),
+      stripeCustomerId, createdAt: new Date().toISOString(),
     });
     localStorage.setItem("boli_user_id", userId);
     router.push("/concierge");
   };
 
   return (
-    <main className="min-h-dvh flex items-center justify-center px-5 py-8 bg-slate-900 text-white">
-      <div className="w-full max-w-md space-y-5">
+    <main className="min-h-dvh bg-[oklch(10%_0.01_160)] text-[oklch(94%_0.005_160)] flex items-center justify-center px-5 py-12">
+      <div className="w-full max-w-sm space-y-8">
         {/* Header */}
-        <div className="text-center">
-          <h1 className="text-3xl font-bold">
-            Boli<span className="text-emerald-400">.</span>
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">
+            Boli<span className="text-[oklch(72%_0.19_160)]">.</span>
           </h1>
-          <p className="text-slate-400 mt-2 text-sm">Set up your voice concierge</p>
+          <p className="text-xs text-[oklch(45%_0.005_160)] mt-1">
+            {step === 1 ? "Your details" : "Choose a plan"}
+          </p>
         </div>
 
-        {/* Progress bar */}
-        <div className="flex gap-2">
+        {/* Progress */}
+        <div className="flex gap-1.5">
           {[1, 2].map((s) => (
             <div
               key={s}
-              className={`h-1 flex-1 rounded-full transition-colors ${
-                s <= step ? "bg-emerald-500" : "bg-slate-700"
+              className={`h-0.5 flex-1 rounded-full transition-colors ${
+                s <= step ? "bg-[oklch(72%_0.19_160)]" : "bg-[oklch(22%_0.01_160)]"
               }`}
             />
           ))}
         </div>
 
-        {/* Step 1: User info */}
         {step === 1 && (
-          <div className="space-y-4 animate-[fadeIn_0.3s_ease-out]">
-            <label className="block text-sm text-slate-400">Your details</label>
-            <input
-              type="text"
-              placeholder="Name"
-              value={form.name}
-              onChange={(e) => setForm({ ...form, name: e.target.value })}
-              className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg focus:outline-none focus:border-emerald-500 transition-colors"
-            />
-            <input
-              type="email"
-              placeholder="Email"
-              value={form.email}
-              onChange={(e) => setForm({ ...form, email: e.target.value })}
-              className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg focus:outline-none focus:border-emerald-500 transition-colors"
-            />
-            <input
-              type="text"
-              placeholder="Delivery address"
-              value={form.address}
-              onChange={(e) => setForm({ ...form, address: e.target.value })}
-              className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg focus:outline-none focus:border-emerald-500 transition-colors"
-            />
+          <div className="space-y-4">
+            {[
+              { key: "name", type: "text", placeholder: "Name" },
+              { key: "email", type: "email", placeholder: "Email" },
+              { key: "address", type: "text", placeholder: "Delivery address" },
+            ].map((f) => (
+              <input
+                key={f.key}
+                type={f.type}
+                placeholder={f.placeholder}
+                value={form[f.key as keyof typeof form]}
+                onChange={(e) => setForm({ ...form, [f.key]: e.target.value })}
+                className="w-full px-4 py-3 bg-[oklch(14%_0.01_160)] border border-[oklch(22%_0.01_160)] rounded-lg text-sm placeholder:text-[oklch(35%_0.005_160)] focus:outline-none focus:border-[oklch(72%_0.19_160)] transition-colors"
+              />
+            ))}
             <button
               onClick={() => setStep(2)}
               disabled={!form.name || !form.email}
-              className="w-full py-3 bg-emerald-500 hover:bg-emerald-600 disabled:opacity-40 disabled:cursor-not-allowed rounded-lg font-medium transition-all"
+              className="w-full py-3 bg-[oklch(72%_0.19_160)] text-[oklch(10%_0.01_160)] text-sm font-medium rounded-full disabled:opacity-30 transition-opacity"
             >
               Continue
             </button>
           </div>
         )}
 
-        {/* Step 2: Tier selection */}
         {step === 2 && (
-          <div className="space-y-4 animate-[fadeIn_0.3s_ease-out]">
-            <label className="block text-sm text-slate-400">Choose your plan</label>
+          <div className="space-y-3">
             {TIERS.map((t) => (
               <button
                 key={t.id}
                 onClick={() => setTier(t.id)}
                 className={`w-full p-4 rounded-lg border text-left transition-all ${
                   tier === t.id
-                    ? "border-emerald-500 bg-emerald-500/10 shadow-lg shadow-emerald-500/5"
-                    : "border-slate-700 bg-slate-800 hover:border-slate-600"
+                    ? "border-[oklch(72%_0.19_160)] bg-[oklch(72%_0.19_160)/6%]"
+                    : "border-[oklch(22%_0.01_160)] hover:border-[oklch(30%_0.01_160)]"
                 }`}
               >
-                <div className="flex justify-between items-center">
-                  <span className="font-semibold">{t.name}</span>
-                  <span className="text-sm font-medium text-emerald-400">{t.price}</span>
+                <div className="flex items-baseline justify-between">
+                  <span className="text-sm font-medium">{t.name}</span>
+                  <span className="text-xs text-[oklch(72%_0.19_160)]">{t.price}/mo</span>
                 </div>
-                <ul className="mt-2 text-xs text-slate-400 space-y-1">
-                  {t.features.map((f) => (
-                    <li key={f}>✓ {f}</li>
-                  ))}
-                </ul>
+                <p className="text-xs text-[oklch(50%_0.005_160)] mt-1">{t.note}</p>
               </button>
             ))}
 
-            <div className="flex gap-3">
+            <div className="flex gap-3 pt-2">
               <button
                 onClick={() => setStep(1)}
-                className="flex-1 py-3 border border-slate-700 hover:border-slate-600 rounded-lg font-medium transition-colors"
+                className="flex-1 py-3 border border-[oklch(22%_0.01_160)] text-sm rounded-full hover:border-[oklch(35%_0.01_160)] transition-colors"
               >
                 Back
               </button>
               <button
                 onClick={handleSubmit}
                 disabled={loading}
-                className="flex-2 py-3 px-6 bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 rounded-lg font-medium transition-all"
+                className="flex-[2] py-3 bg-[oklch(72%_0.19_160)] text-[oklch(10%_0.01_160)] text-sm font-medium rounded-full disabled:opacity-50 transition-opacity"
               >
-                {loading ? "Setting up..." : "Start Ordering →"}
+                {loading ? "Setting up…" : "Start →"}
               </button>
             </div>
           </div>

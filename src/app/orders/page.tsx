@@ -13,73 +13,47 @@ export default function OrdersPage() {
     const userId = localStorage.getItem("boli_user_id");
     if (!userId) return;
     db.users.get(userId).then((u) => u && setUser(u));
-    db.orders
-      .where("userId")
-      .equals(userId)
-      .reverse()
-      .sortBy("createdAt")
-      .then(setOrders);
+    db.orders.where("userId").equals(userId).reverse().sortBy("createdAt").then(setOrders);
   }, []);
 
   return (
-    <main className="min-h-dvh bg-slate-900 text-white px-5 py-8">
-      <div className="max-w-lg mx-auto space-y-5">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-          <h1 className="text-xl sm:text-2xl font-bold">Order History</h1>
-          <Link
-            href="/concierge"
-            className="text-sm text-emerald-400 hover:underline active:text-emerald-300"
-          >
-            ← Back to Concierge
+    <main className="min-h-dvh bg-[oklch(10%_0.01_160)] text-[oklch(94%_0.005_160)] px-5 py-8">
+      <div className="max-w-lg mx-auto space-y-6">
+        <header className="flex items-baseline justify-between">
+          <h1 className="text-xl font-bold tracking-tight">Orders</h1>
+          <Link href="/concierge" className="text-xs text-[oklch(72%_0.19_160)] hover:underline">
+            ← Concierge
           </Link>
-        </div>
+        </header>
 
         {user && (
-          <div className="flex items-center gap-3 p-3 bg-slate-800 rounded-lg">
-            <span className="text-sm text-slate-400">
-              {user.name} •{" "}
-              <span className="capitalize text-emerald-400">{user.tier}</span> tier
-              • {user.ordersUsed} orders this month
-            </span>
-          </div>
+          <p className="text-xs text-[oklch(45%_0.005_160)]">
+            {user.name} · <span className="capitalize text-[oklch(72%_0.19_160)]">{user.tier}</span> · {user.ordersUsed} this month
+          </p>
         )}
 
         {orders.length === 0 ? (
-          <p className="text-slate-500 text-center py-12">
-            No orders yet. Start a conversation to place your first order!
+          <p className="text-sm text-[oklch(40%_0.005_160)] text-center py-16">
+            No orders yet. Start a conversation to place your first.
           </p>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-px bg-[oklch(18%_0.01_160)] rounded-lg overflow-hidden">
             {orders.map((order) => (
-              <div
-                key={order.id}
-                className="p-4 bg-slate-800 rounded-lg border border-slate-700"
-              >
-                <div className="flex justify-between items-start">
-                  <div>
-                    <p className="font-medium">{order.item}</p>
-                    <p className="text-sm text-slate-400">
-                      {order.merchant} • {order.eta} min ETA
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-medium text-emerald-400">₹{order.price}</p>
-                    <p
-                      className={`text-xs ${
-                        order.status === "confirmed"
-                          ? "text-amber-400"
-                          : order.status === "delivered"
-                            ? "text-emerald-400"
-                            : "text-red-400"
-                      }`}
-                    >
-                      {order.status}
-                    </p>
-                  </div>
+              <div key={order.id} className="bg-[oklch(12%_0.01_160)] p-4 flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium">{order.item}</p>
+                  <p className="text-xs text-[oklch(45%_0.005_160)]">
+                    {order.merchant} · {order.eta}m · {new Date(order.createdAt).toLocaleDateString()}
+                  </p>
                 </div>
-                <p className="text-xs text-slate-500 mt-2">
-                  {new Date(order.createdAt).toLocaleString()}
-                </p>
+                <div className="text-right">
+                  <p className="text-sm font-medium text-[oklch(72%_0.19_160)]">₹{order.price}</p>
+                  <p className={`text-xs ${
+                    order.status === "confirmed" ? "text-[oklch(75%_0.15_80)]"
+                    : order.status === "delivered" ? "text-[oklch(72%_0.19_160)]"
+                    : "text-[oklch(65%_0.2_25)]"
+                  }`}>{order.status}</p>
+                </div>
               </div>
             ))}
           </div>

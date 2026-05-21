@@ -25,7 +25,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className="dark">
-      <body className={`${geist.className} antialiased bg-slate-900`}>
+      <body className={`${geist.className} antialiased bg-[oklch(10%_0.01_160)]`}>
         {children}
       </body>
     </html>
