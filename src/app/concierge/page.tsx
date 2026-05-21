@@ -165,6 +165,11 @@ function ConciergeInner() {
                     });
                   }
                 }
+                // Show success card
+                setMessages((prev) => [...prev, {
+                  role: "system",
+                  text: `✅ Payment Successful\n💳 ₹${res.amount} charged via Stripe\n🏪 ${res.merchant}\n📦 ${res.product}\n🆔 ${(res.order_id || "").slice(0, 20)}…`,
+                }]);
               }
             } catch { /* ignore parse errors */ }
           }
@@ -182,7 +187,7 @@ function ConciergeInner() {
                   if (u) setUser(u);
                 }
                 setUpgraded(true);
-                setMessages((prev) => [...prev, { role: "system", text: `🎉 Upgraded to ${newTier}! Premium voice activated.` }]);
+                setMessages((prev) => [...prev, { role: "system", text: `✅ Subscription Activated\n⬆️ Upgraded to Boli ${newTier.charAt(0).toUpperCase() + newTier.slice(1)}\n♾️ Unlimited orders\n🎙️ Premium voice enabled` }]);
                 endSession();
                 setTimeout(async () => {
                   const urlRes = await fetch(`/api/agent/signed-url?tier=${newTier}`);
@@ -284,12 +289,16 @@ function ConciergeInner() {
           {messages.map((msg, i) => (
             <div
               key={i}
-              className={`text-sm px-4 py-2.5 rounded-xl ${
+              className={`text-sm px-4 py-2.5 rounded-xl whitespace-pre-line ${
                 msg.role === "agent"
                   ? "bg-gray-800 text-gray-200 mr-12"
-                  : msg.role === "system"
-                    ? "text-center text-xs text-emerald-400 py-1"
-                    : "bg-emerald-900/30 text-emerald-100 ml-12"
+                  : msg.role === "system" && msg.text.includes("Payment Successful")
+                    ? "bg-emerald-950/50 border border-emerald-500/30 text-emerald-200 text-xs leading-relaxed"
+                    : msg.role === "system" && msg.text.includes("Upgraded")
+                      ? "bg-purple-950/50 border border-purple-500/30 text-purple-200 text-xs leading-relaxed"
+                      : msg.role === "system"
+                        ? "text-center text-xs text-emerald-400 py-1"
+                        : "bg-emerald-900/30 text-emerald-100 ml-12"
               }`}
             >
               {msg.text}
