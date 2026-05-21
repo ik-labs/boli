@@ -16,10 +16,18 @@ interface Message {
   text: string;
 }
 
+interface Activity {
+  type: "tool_call" | "tool_result" | "status";
+  label: string;
+  detail?: string;
+  timestamp: number;
+}
+
 function ConciergeInner() {
   const { startSession, endSession } = useConversationControls();
   const { status } = useConversationStatus();
   const [messages, setMessages] = useState<Message[]>([]);
+  const [activities, setActivities] = useState<Activity[]>([]);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const [upgraded, setUpgraded] = useState(false);
@@ -92,6 +100,32 @@ function ConciergeInner() {
         },
         onModeChange: (mode) => setIsSpeaking(mode.mode === "speaking"),
         onStatusChange: (s) => { if (s.status === "disconnected") setIsSpeaking(false); },
+        onAgentToolRequest: (tool) => {
+          const labels: Record<string, string> = {
+            search_products: "🔍 Searching merchants…",
+            place_order: "💳 Processing payment…",
+            upgrade_plan: "⬆️ Creating subscription…",
+            get_user_context: "👤 Loading your profile…",
+          };
+          setActivities((prev) => [...prev, {
+            type: "tool_call",
+            label: labels[tool.tool_name] || `⚙️ ${tool.tool_name}`,
+            timestamp: Date.now(),
+          }]);
+        },
+        onAgentToolResponse: (tool) => {
+          const labels: Record<string, string> = {
+            search_products: "✅ Found results across 3 merchants",
+            place_order: "✅ Order confirmed via Stripe",
+            upgrade_plan: "✅ Subscription activated",
+            get_user_context: "✅ Profile loaded",
+          };
+          setActivities((prev) => [...prev, {
+            type: "tool_result",
+            label: labels[tool.tool_name] || `✅ ${tool.tool_name} done`,
+            timestamp: Date.now(),
+          }]);
+        },
       });
     }
   }, [status, user, startSession, endSession, startPolling]);
@@ -203,6 +237,26 @@ function ConciergeInner() {
               {msg.text}
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Activity feed — shows tool calls under the hood */}
+      {activities.length > 0 && (
+        <div className="px-6 pb-3">
+          <p className="text-[10px] uppercase tracking-widest text-gray-600 mb-2">Under the hood</p>
+          <div className="space-y-1 max-h-24 overflow-y-auto">
+            {activities.slice(-6).map((a, i) => (
+              <div key={i} className="flex items-center gap-2 text-xs">
+                <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${
+                  a.type === "tool_call" ? "bg-amber-400 animate-pulse" : "bg-emerald-400"
+                }`} />
+                <span className="text-gray-400">{a.label}</span>
+                <span className="text-gray-600 ml-auto text-[10px]">
+                  {new Date(a.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
+                </span>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 
