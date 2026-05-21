@@ -24,9 +24,11 @@ export async function POST(req: Request) {
     orders_used = 0,
   } = body;
 
-  // Enforce tier limits
+  // Enforce tier limits — skip if paid user (has real payment method or paid tier)
+  const isPaidTier = tier === "plus" || tier === "pro";
+  const hasPaidPaymentMethod = !!payment_method_id && payment_method_id !== "";
   const limit = TIER_LIMITS[tier as Tier] ?? 3;
-  if (orders_used >= limit) {
+  if (!isPaidTier && !hasPaidPaymentMethod && orders_used >= limit) {
     return NextResponse.json({
       success: false,
       error: "limit_reached",
