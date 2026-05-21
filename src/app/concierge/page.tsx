@@ -73,8 +73,12 @@ function ConciergeInner() {
 
   const handleToggle = useCallback(async () => {
     if (status === "connected") { endSession(); return; }
-    const tier = user?.tier || "free";
-    const res = await fetch(`/api/agent/signed-url?tier=${tier}`);
+    // Read fresh from DB for correct agent selection
+    const userId = localStorage.getItem("boli_user_id");
+    const freshUser = userId ? await db.users.get(userId) : null;
+    if (freshUser) setUser(freshUser);
+    const currentTier = freshUser?.tier || "free";
+    const res = await fetch(`/api/agent/signed-url?tier=${currentTier}`);
     const { signedUrl } = await res.json();
     if (signedUrl) {
       startSession({
@@ -101,8 +105,12 @@ function ConciergeInner() {
           setMessages((prev) => [...prev, { role: "agent", text: msg.message }]);
           setIsSpeaking(true);
           setTimeout(() => setIsSpeaking(false), 1500);
-          if (user?.stripeCustomerId && msg.message.toLowerCase().includes("upgrad")) {
-            startPolling(user.stripeCustomerId);
+          // Read fresh for polling trigger
+          if (msg.message.toLowerCase().includes("upgrad")) {
+            const uid = localStorage.getItem("boli_user_id");
+            if (uid) db.users.get(uid).then(u => {
+              if (u?.stripeCustomerId) startPolling(u.stripeCustomerId);
+            });
           }
         },
         onModeChange: (mode) => setIsSpeaking(mode.mode === "speaking"),
@@ -120,7 +128,7 @@ function ConciergeInner() {
             timestamp: Date.now(),
           }]);
         },
-        onAgentToolResponse: (tool) => {
+        onAgentToolResponse: async (tool) => {
           const labels: Record<string, string> = {
             search_products: "✅ Found results across 3 merchants",
             place_order: "✅ Order confirmed via Stripe",
@@ -133,37 +141,46 @@ function ConciergeInner() {
             timestamp: Date.now(),
           }]);
 
-          // Handle demo mode: update local state on successful order/upgrade
-          if (tool.tool_name === "place_order" && user) {
+          // Handle: update local state on successful order/upgrade
+          if (tool.tool_name === "place_order") {
             try {
               const res = typeof (tool as unknown as Record<string, unknown>).result === "string"
                 ? JSON.parse((tool as unknown as Record<string, unknown>).result as string)
                 : (tool as unknown as Record<string, unknown>).result;
               if (res?.success) {
-                const newUsed = (user.ordersUsed || 0) + 1;
-                db.users.update(user.id, { ordersUsed: newUsed });
-                setUser({ ...user, ordersUsed: newUsed });
-                db.orders.add({
-                  userId: user.id, item: res.product || "Item", merchant: res.merchant || "Merchant",
-                  price: res.amount || 0, eta: 12, status: "confirmed",
-                  stripePaymentIntentId: res.order_id || "", consentTranscript: "",
-                  createdAt: new Date().toISOString(),
-                });
+                const uid = localStorage.getItem("boli_user_id");
+                if (uid) {
+                  const u = await db.users.get(uid);
+                  if (u) {
+                    const newUsed = (u.ordersUsed || 0) + 1;
+                    await db.users.update(uid, { ordersUsed: newUsed });
+                    setUser({ ...u, ordersUsed: newUsed });
+                    await db.orders.add({
+                      userId: uid, item: res.product || "Item", merchant: res.merchant || "Merchant",
+                      price: res.amount || 0, eta: 12, status: "confirmed",
+                      stripePaymentIntentId: res.order_id || "", consentTranscript: "",
+                      createdAt: new Date().toISOString(),
+                    });
+                  }
+                }
               }
             } catch { /* ignore parse errors */ }
           }
-          if (tool.tool_name === "upgrade_plan" && user) {
+          if (tool.tool_name === "upgrade_plan") {
             try {
               const res = typeof (tool as unknown as Record<string, unknown>).result === "string"
                 ? JSON.parse((tool as unknown as Record<string, unknown>).result as string)
                 : (tool as unknown as Record<string, unknown>).result;
               if (res?.success) {
                 const newTier = (res.plan || "plus") as User["tier"];
-                db.users.update(user.id, { tier: newTier, ordersUsed: 0 });
-                setUser({ ...user, tier: newTier, ordersUsed: 0 });
+                const uid = localStorage.getItem("boli_user_id");
+                if (uid) {
+                  await db.users.update(uid, { tier: newTier, ordersUsed: 0 });
+                  const u = await db.users.get(uid);
+                  if (u) setUser(u);
+                }
                 setUpgraded(true);
                 setMessages((prev) => [...prev, { role: "system", text: `🎉 Upgraded to ${newTier}! Premium voice activated.` }]);
-                // Reconnect with premium agent
                 endSession();
                 setTimeout(async () => {
                   const urlRes = await fetch(`/api/agent/signed-url?tier=${newTier}`);
