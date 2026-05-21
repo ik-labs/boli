@@ -80,15 +80,22 @@ function ConciergeInner() {
       startSession({
         signedUrl,
         clientTools: {
-          get_user_context: async () => JSON.stringify({
-            userId: user?.id || "demo",
-            tier: user?.tier || "free",
-            ordersUsed: user?.ordersUsed || 0,
-            ordersRemaining: ordersRemaining(user?.tier || "free", user?.ordersUsed || 0),
-            name: user?.name || "Guest",
-            customerId: user?.stripeCustomerId || "",
-            paymentMethodId: user?.paymentMethodId || "",
-          }),
+          get_user_context: async () => {
+            // Always read fresh from DB to get latest tier/orders
+            const userId = localStorage.getItem("boli_user_id");
+            const freshUser = userId ? await db.users.get(userId) : null;
+            if (freshUser) setUser(freshUser);
+            const u = freshUser || user;
+            return JSON.stringify({
+              userId: u?.id || "demo",
+              tier: u?.tier || "free",
+              ordersUsed: u?.ordersUsed || 0,
+              ordersRemaining: ordersRemaining(u?.tier || "free", u?.ordersUsed || 0),
+              name: u?.name || "Guest",
+              customerId: u?.stripeCustomerId || "",
+              paymentMethodId: u?.paymentMethodId || "",
+            });
+          },
         },
         onMessage: (msg) => {
           setMessages((prev) => [...prev, { role: "agent", text: msg.message }]);
